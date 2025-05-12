@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Converter Tool</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    input[type="file"], select, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background-color: #6200ea;
+      color: white;
+      cursor: pointer;
+    }
+    #preview {
+      margin-top: 20px;
+      text-align: center;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Image Converter</h2>
+    <input type="file" id="imageInput" accept="image/*" />
+    <select id="formatSelect">
+      <option value="png">PNG</option>
+      <option value="jpeg">JPG / JPEG</option>
+      <option value="bmp">BMP</option>
+      <option value="gif">GIF</option>
+      <option value="webp">WEBP</option>
+    </select>
+    <button onclick="convertImage()">Convert</button>
+    <p id="status"></p>
+    <div id="preview"></div>
+  </div>
+
+  <script>
+    function convertImage() {
+      const fileInput = document.getElementById('imageInput');
+      const format = document.getElementById('formatSelect').value;
+      const status = document.getElementById('status');
+      const preview = document.getElementById('preview');
+
+      if (!fileInput.files[0]) {
+        alert("Please upload an image.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      status.textContent = "Processing image...";
+      preview.innerHTML = "";
+
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+
+            const imageElement = document.createElement('img');
+            imageElement.src = url;
+            preview.appendChild(imageElement);
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = converted-image.${format};
+            downloadLink.textContent = 'Download Image';
+            downloadLink.style.display = 'block';
+            downloadLink.style.marginTop = '10px';
+            preview.appendChild(downloadLink);
+
+            status.textContent = "Conversion complete.";
+          }, image/${format});
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
