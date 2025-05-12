@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Converter Tool</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    input, select, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background-color: #03dac6;
+      color: #000;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
+    video {
+      margin-top: 20px;
+      width: 100%;
+      border-radius: 10px;
+    }
+    #loading {
+      display: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Video Converter</h2>
+    <input type="file" id="videoUpload" accept="video/*" />
+    <select id="formatSelect">
+      <option value="mp4">MP4</option>
+      <option value="mov">MOV</option>
+      <option value="wmv">WMV</option>
+      <option value="avi">AVI</option>
+      <option value="mkv">MKV</option>
+      <option value="flv">FLV</option>
+      <option value="webm">WEBM</option>
+    </select>
+    <button id="convertBtn">Convert</button>
+    <p id="loading">Processing...</p>
+    <video id="preview" controls style="display:none;"></video>
+    <a id="downloadLink" style="display:none; margin-top: 10px; color: #03dac6; text-align: center; display: block;">Download Converted Video</a>
+  </div>
+
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+    const convertBtn = document.getElementById('convertBtn');
+    const videoUpload = document.getElementById('videoUpload');
+    const formatSelect = document.getElementById('formatSelect');
+    const preview = document.getElementById('preview');
+    const loading = document.getElementById('loading');
+    const downloadLink = document.getElementById('downloadLink');
+
+    convertBtn.addEventListener('click', async () => {
+      const file = videoUpload.files[0];
+      if (!file) {
+        alert('Please upload a video file.');
+        return;
+      }
+
+      const outputFormat = formatSelect.value;
+      const fileName = file.name.split('.')[0];
+      const outputFile = ${fileName}_converted.${outputFormat};
+
+      loading.style.display = 'block';
+      convertBtn.disabled = true;
+      downloadLink.style.display = 'none';
+      preview.style.display = 'none';
+
+      if (!ffmpeg.isLoaded()) {
+        await ffmpeg.load();
+      }
+
+      ffmpeg.FS('writeFile', file.name, await fetchFile(file));
+
+      await ffmpeg.run('-i', file.name, outputFile);
+
+      const data = ffmpeg.FS('readFile', outputFile);
+      const videoBlob = new Blob([data.buffer], { type: video/${outputFormat} });
+      const videoURL = URL.createObjectURL(videoBlob);
+
+      preview.src = videoURL;
+      preview.style.display = 'block';
+      downloadLink.href = videoURL;
+      downloadLink.download = outputFile;
+      downloadLink.style.display = 'block';
+
+      loading.style.display = 'none';
+      convertBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>
